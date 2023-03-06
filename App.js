@@ -5,13 +5,17 @@ import {  StyleSheet, Text, View, ImageBackground, TouchableOpacity,TouchableHig
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { useFonts, Lato_400Regular_Italic } from '@expo-google-fonts/lato'; 
 import {LogBox} from 'react-native';
+import ConfirmationPopup from './components/ConfirmationPopup';
+
 
 console.disableYellowBox = true;
 
 export default function App() {
 
+
   const image = require('./assets/background3.png');
   const [modal,setModal] = useState(false); 
+  const [comfirm,setComfirm] = useState(false); 
   const [NewTask,setNewTask] = useState('');
   const [tasks, setTask] = useState([]);
   console.disableYellowBox = true;
@@ -46,7 +50,7 @@ export default function App() {
   }
 
     function DelTask(id) {
-      alert("This task has been deleted")
+      
       let newsTask= tasks.filter(function(val){
         return val.id != id;
       });
@@ -89,17 +93,56 @@ export default function App() {
       
     }
 
+    function Confirm(id, title, description) {  
+    
+      {(
+        Alert.alert( 
+          title,
+          description,
+          [
+            {text: 'Cancel',style: 'cancel'},
+            {text: 'Confirm', onPress:() => DelTask(id)}
+          ]
+        )
+      )}
+  }  
+
+    function DaCerto(){
+      return(
+      <Modal
+      animationType="slide"
+      transparent={true}
+      visible={true}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <View style={{alignItems:'flex-end'}}>
+            <TouchableOpacity  onPress={() => setModal(false)}><AntDesign name="close" size={24} color="black" /></TouchableOpacity>
+          </View>
+
+            <TextInput style={styles.inputText} onChangeText={text => setNewTask(text)} multiline placeholder="Escreva sua tarefa aqui..." ></TextInput>
+          
+          <TouchableHighlight
+            style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+            onPress={() => AddTask()}
+          >
+            <Text style={styles.textStyle}>Add Tasks</Text>
+          </TouchableHighlight>
+        </View>
+      </View>
+    </Modal>)
+
+    }
+
+
   return (
     <ScrollView style={{flex:1 ,backgroundColor:'#a9a656'}}>
       <StatusBar hidden/>
-
+      
       <Modal
         animationType="slide"
         transparent={true}
         visible={modal}
-        onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-        }}
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
@@ -113,7 +156,7 @@ export default function App() {
               style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
               onPress={() => AddTask()}
             >
-              <Text style={styles.textStyle}>Adicionar Tarefa</Text>
+              <Text style={styles.textStyle}>Add Task</Text>
             </TouchableHighlight>
           </View>
         </View>
@@ -122,7 +165,7 @@ export default function App() {
         
         <ImageBackground source={image} style={styles.image}>
           <View style={styles.coverView}>
-            <Text style={styles.textHeader}>Lista de Afazeres</Text>
+            <Text style={styles.textHeader}>To-do list</Text>
           </View>
         </ImageBackground>
       <View style = {{paddingHorizontal:10}}>
@@ -130,12 +173,12 @@ export default function App() {
         tasks.map(function(task) {
           return(<View style={styles.taskSingle}>
 
-            <View style={{flex:1, width:'100%', padding:10}}>
+            <View style={{flex:1, padding:10}}>
               <Text >{task.description}</Text>
             </View>
 
-            <View style={{flex:1, alignItems: 'flex-end', padding:10}}>
-                <TouchableOpacity onPress={() => DelTask(task.id)}><AntDesign name="minus" size={24} color="black" /></TouchableOpacity>
+            <View style={{flex:0, alignItems: 'flex-end', padding:10}}>
+                <TouchableOpacity onPress={() => Confirm(task.id, 'Confirm','Are you sure that want delete this task',)}><AntDesign name="minus" size={24} color="black" /></TouchableOpacity>
             </View>
 
         </View>);
@@ -148,12 +191,26 @@ export default function App() {
           <TouchableOpacity style={{flex:1 , alignItems: 'flex-end'}} onPress={() => setModal(true)}>
             <Entypo name="plus" size={24} color="black" />
           </TouchableOpacity>
+
+          {
+            (tasks.length > 5)
+             ?
+              <TouchableHighlight style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+              onPress={() => setTask([])}
+              >
+              <Text style={styles.textStyle}>Clear up all</Text>
+              </TouchableHighlight>
+              :
+              <View></View>
+          }
+         
         </View>
      
 
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   image: {
